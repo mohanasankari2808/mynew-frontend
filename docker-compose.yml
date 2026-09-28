@@ -1,6 +1,5 @@
-version: "3.9"
-
 services:
+
   mongodb:
     image: mongo:7
     container_name: mongodb
@@ -13,84 +12,79 @@ services:
       - smart-network
 
   auth-service:
-    build: ./auth-service_1784011000189
+    image: ${DOCKER_USER}/smart-task-auth-service:${BUILD_NUMBER}
     container_name: auth-service
+    restart: always
     ports:
       - "5001:5001"
     environment:
       - PORT=5001
       - MONGO_URI=mongodb://mongodb:27017/authdb
-      - JWT_SECRET=MySecret@123
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - mongodb
     networks:
       - smart-network
 
   task-service:
-    build: ./task-service
+    image: ${DOCKER_USER}/smart-task-task-service:${BUILD_NUMBER}
     container_name: task-service
+    restart: always
     ports:
       - "5002:5002"
     environment:
       - PORT=5002
       - MONGO_URI=mongodb://mongodb:27017/taskdb
-      - JWT_SECRET=MySecret@123
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - mongodb
     networks:
       - smart-network
 
   notification-service:
-    build: ./notification-service
+    image: ${DOCKER_USER}/smart-task-notification-service:${BUILD_NUMBER}
     container_name: notification-service
+    restart: always
     ports:
       - "5003:5003"
     environment:
       - PORT=5003
       - MONGO_URI=mongodb://mongodb:27017/notificationdb
-      - JWT_SECRET=MySecret@123
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - mongodb
     networks:
       - smart-network
 
   report-service:
-    build: ./report-service
+    image: ${DOCKER_USER}/smart-task-report-service:${BUILD_NUMBER}
     container_name: report-service
+    restart: always
     ports:
       - "5004:5004"
     environment:
       - PORT=5004
       - MONGO_URI=mongodb://mongodb:27017/reportdb
-      - JWT_SECRET=MySecret@123
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - mongodb
     networks:
       - smart-network
 
   api-gateway:
-    build: ./api-gateway_1784010924579
+    image: ${DOCKER_USER}/smart-task-api-gateway:${BUILD_NUMBER}
     container_name: api-gateway
+    restart: always
     ports:
       - "5000:5000"
     environment:
       - PORT=5000
       - AUTH_SERVICE_URL=http://auth-service:5001
       - TASK_SERVICE_URL=http://task-service:5002
-      - JWT_SECRET=MySecret@123
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - auth-service
       - task-service
-    networks:
-      - smart-network
-
-  frontend:
-    build: ./frontend
-    container_name: frontend
-    ports:
-      - "5173:5173"
-    depends_on:
-      - api-gateway
     networks:
       - smart-network
 
@@ -100,5 +94,3 @@ volumes:
 networks:
   smart-network:
     driver: bridge
-
-
